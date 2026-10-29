@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Money</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#f2f6f3;--card:#fff;--ink:#17302b;--muted:#5b716b;--line:#d6e1dc;--main:#0d6b5a;--onmain:#fff;--sun:#f4b53f;--tile:#e3efe9;--bad:#b3261e;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1c19;--card:#172824;--ink:#e6f1ed;--muted:#9bb2ab;--line:#28403a;--main:#3fc1a5;--onmain:#06231d;--tile:#203630;--bad:#ff8a80}}
+:root[data-theme="dark"]{--bg:#0f1c19;--card:#172824;--ink:#e6f1ed;--muted:#9bb2ab;--line:#28403a;--main:#3fc1a5;--onmain:#06231d;--tile:#203630;--bad:#ff8a80}
+*{box-sizing:border-box}
+html,body{height:100%}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.45}
+.app{max-width:640px;margin:0 auto;min-height:100%;padding:0 16px calc(84px + env(safe-area-inset-bottom,0px))}
+.top{display:flex;align-items:center;gap:10px;padding:14px 0 6px}
+.logo{width:40px;height:40px;border-radius:12px;background:var(--main);color:var(--onmain);display:grid;place-items:center;font-weight:800;font-size:1.4rem}
+.top h1{margin:0;font-size:1.7rem;font-weight:800;letter-spacing:-.02em}
+.top span{display:block;font-size:.85rem;color:var(--muted);font-weight:400}
+h2{margin:14px 0 8px;font-size:1.3rem}
+input,select,button{font:inherit;color:inherit}
+input,select{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;background:var(--card)}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+label{display:block;margin:12px 0 4px;font-weight:600;font-size:.95rem}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.btn{display:block;width:100%;margin-top:16px;padding:13px 16px;border:0;border-radius:10px;background:var(--main);color:var(--onmain);font-weight:600;text-align:center;text-decoration:none;cursor:pointer}
+.btn.alt{background:var(--tile);color:var(--ink)}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.count{margin:14px 0 8px;color:var(--muted)}
+.list{display:grid;gap:12px}
+.item{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.pic{flex:0 0 80px;height:80px;border-radius:10px;background:var(--tile);display:grid;place-items:center;font-size:2.3rem}
+.info{flex:1;min-width:0}
+.info h3{margin:0;font-size:1.02rem;overflow-wrap:anywhere}
+.price{font-weight:800;color:var(--main);font-size:1.1rem}
+.meta{color:var(--muted);font-size:.9rem}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts .btn{display:inline-block;width:auto;margin-top:8px;padding:9px 12px;font-size:.95rem}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:8px}
+.badge{display:inline-block;padding:4px 10px;border-radius:99px;background:var(--sun);color:#2a1d00;font-weight:600;font-size:.9rem}
+.badge.bad{background:var(--bad);color:#fff}
+.hint{font-size:.88rem;color:var(--muted);margin:6px 0 0}
+.err{font-size:.9rem;color:var(--bad);margin:8px 0 0;min-height:1.2em}
+.empty{padding:26px 12px;text-align:center;color:var(--muted);border:1.5px dashed var(--line);border-radius:14px}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;gap:6px}
+nav button{flex:1;max-width:200px;border:0;background:none;padding:8px 4px;border-radius:10px;font-size:.85rem;color:var(--muted);cursor:pointer}
+nav button b{display:block;font-size:1.3rem;font-weight:400}
+nav button[aria-current="page"]{background:var(--tile);color:var(--main);font-weight:600}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="top"><div class="logo">M</div><h1>Money<span>Achetez et vendez près de chez vous</span></h1></div>
+
+<section id="explore">
+<input id="q" type="search" placeholder="Rechercher un article ou une ville" aria-label="Rechercher">
+<div class="two"><select id="fc" aria-label="Pays"><option value="">Tous les pays</option></select><select id="fk" aria-label="Catégorie"><option value="">Toutes catégories</option></select></div>
+<p class="count" id="count">Chargement…</p>
+<div class="list" id="list"></div>
+</section>
+
+<section id="sell" hidden>
+<h2>Vendre un article</h2>
+<div id="sellLocked" class="box" hidden><p id="lockMsg" style="margin:0"></p><button class="btn" id="goAcc" type="button">Aller à mon compte</button></div>
+<div id="sellForm" class="box" hidden>
+<label for="t">Article</label><input id="t" placeholder="Ex. : Téléphone Tecno Spark">
+<label for="p">Prix</label><input id="p" type="number" inputmode="numeric" placeholder="Ex. : 45000">
+<label for="k">Catégorie</label><select id="k"></select>
+<label for="v">Ville</label><input id="v" placeholder="Ex. : Abidjan">
+<p class="err" id="serr" role="alert"></p>
+<button class="btn" id="pub" type="button">Publier l’annonce</button>
+</div>
+</section>
+
+<section id="account" hidden>
+<h2>Mon compte vendeur</h2>
+<div id="auth" class="box">
+<p id="intro" style="margin:0 0 4px"></p>
+<div id="regFields">
+<label for="n">Votre nom</label><input id="n" autocomplete="name">
+<label for="c">Pays</label><select id="c"></select>
+<label for="w">Numéro WhatsApp</label><input id="w" type="tel" inputmode="tel" placeholder="Ex. : 2250700000000">
+<p class="hint">Avec l’indicatif du pays, sans + ni espaces.</p>
+</div>
+<label for="em">Email</label><input id="em" type="email" autocomplete="email">
+<label for="pw">Mot de passe (6 caractères minimum)</label><input id="pw" type="password" autocomplete="current-password">
+<p class="err" id="aerr" role="alert"></p>
+<button class="btn" id="go" type="button"></button>
+<button class="btn alt" id="swap" type="button"></button>
+</div>
+<div id="status" class="box" hidden>
+<p style="margin:0 0 6px;font-weight:800;font-size:1.1rem" id="sname"></p>
+<p class="meta" id="sinfo" style="margin:0 0 10px"></p>
+<span class="badge" id="sbadge"></span>
+<p class="hint" id="shint"></p>
+<button class="btn" id="subscribe" type="button" disabled>S’abonner (bientôt disponible)</button>
+<button class="btn alt" id="out" type="button">Se déconnecter</button>
+</div>
+</section>
+</div>
+
+<nav aria-label="Navigation">
+<button data-tab="explore" type="button"><b>🔎</b>Explorer</button>
+<button data-tab="sell" type="button"><b>🏷️</b>Vendre</button>
+<button data-tab="account" type="button"><b>👤</b>Compte</button>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+var SB_URL="https://psfwkgtibogolxgxjvrv.supabase.co";
+var SB_KEY="sb_publishable_v34cyJhzd31cEU6X3BtRzg_emuRxosH";
+var CUR={"Côte d’Ivoire":"FCFA","Sénégal":"FCFA","Burkina Faso":"FCFA","Mali":"FCFA","Bénin":"FCFA","Togo":"FCFA","Niger":"FCFA","Cameroun":"FCFA","Guinée":"GNF","RD Congo":"FC","Nigeria":"₦","Ghana":"GH₵","Maroc":"MAD","Kenya":"KSh"};
+var CATS={"Téléphones":"📱","Vêtements":"👕","Maison":"🛋️","Véhicules":"🛵","Informatique":"💻","Autres":"📦"};
+var DAY=86400000,TRIAL=30,S={user:null,profile:null,rows:[]},mode="reg";
+var $=function(i){return document.getElementById(i)};
+var sb=null;
+try{sb=window.supabase.createClient(SB_URL,SB_KEY);}catch(e){}
+function fill(sel,keys){keys.forEach(function(k){var o=document.createElement("option");o.value=k;o.textContent=k;sel.appendChild(o);});}
+fill($("fc"),Object.keys(CUR));fill($("fk"),Object.keys(CATS));fill($("c"),Object.keys(CUR));fill($("k"),Object.keys(CATS));
+
+function trial(){
+ var p=S.profile;if(!p)return{ok:false,left:0};
+ var left=TRIAL-Math.floor((Date.now()-new Date(p.trial_start).getTime())/DAY);
+ var paid=p.paid_until&&new Date(p.paid_until).getTime()>Date.now();
+ return{ok:paid||left>0,left:left,paid:paid};
+}
+function renderList(){
+ var t=$("q").value.trim().toLowerCase(),L=$("list");
+ var res=S.rows.filter(function(a){return(!$("fc").value||a.country===$("fc").value)&&(!$("fk").value||a.category===$("fk").value)&&(!t||(a.title+" "+a.city).toLowerCase().indexOf(t)>-1);});
+ L.textContent="";$("count").textContent=res.length+(res.length>1?" annonces":" annonce");
+ if(!res.length){var e=document.createElement("div");e.className="empty";e.textContent=S.rows.length?"Aucune annonce pour cette recherche.":"Aucune annonce pour l’instant. Soyez le premier vendeur !";L.appendChild(e);return;}
+ res.forEach(function(a){
+  var d=document.createElement("div");d.className="item";
+  var pic=document.createElement("div");pic.className="pic";pic.textContent=CATS[a.category]||"📦";
+  var i=document.createElement("div");i.className="info";
+  var h=document.createElement("h3");h.textContent=a.title;
+  var p=document.createElement("div");p.className="price";p.textContent=Number(a.price).toLocaleString("fr-FR")+" "+(CUR[a.country]||"");
+  var m=document.createElement("div");m.className="meta";m.textContent=a.category+", "+a.city+" ("+a.country+")";
+  var acts=document.createElement("div");acts.className="acts";
+  var b=document.createElement("a");b.className="btn";b.textContent="Contacter sur WhatsApp";b.target="_blank";b.rel="noopener";
+  b.href="https://wa.me/"+String(a.whatsapp).replace(/\D/g,"")+"?text="+encodeURIComponent("Bonjour, votre annonce « "+a.title+" » sur Money est-elle toujours disponible ?");
+  acts.appendChild(b);
+  if(S.user&&a.seller_id===S.user.id){
+   var x=document.createElement("button");x.type="button";x.className="btn alt";x.textContent="Supprimer";
+   x.addEventListener("click",async function(){if(!confirm("Supprimer cette annonce ?"))return;await sb.from("listings").delete().eq("id",a.id);loadList();});
+   acts.appendChild(x);
+  }
+  i.appendChild(h);i.appendChild(p);i.appendChild(m);i.appendChild(acts);d.appendChild(pic);d.appendChild(i);L.appendChild(d);
+ });
+}
+async function loadList(){
+ if(!sb){$("count").textContent="Connexion impossible. Vérifiez votre réseau.";return;}
+ var r=await sb.from("listings").select("*").order("created_at",{ascending:false}).limit(200);
+ if(r.error){$("count").textContent="Impossible de charger les annonces.";return;}
+ S.rows=r.data||[];renderList();
+}
+async function loadProfile(){
+ S.profile=null;if(!S.user)return;
+ var r=await sb.from("profiles").select("*").eq("id",S.user.id).maybeSingle();
+ if(r.data){S.profile=r.data;return;}
+ var pend=null;try{pend=JSON.parse(localStorage.getItem("money-pending"));}catch(e){}
+ if(pend){
+  var ins=await sb.from("profiles").insert({id:S.user.id,name:pend.n,country:pend.c,whatsapp:pend.w});
+  if(!ins.error){try{localStorage.removeItem("money-pending");}catch(e){}
+   r=await sb.from("profiles").select("*").eq("id",S.user.id).maybeSingle();S.profile=r.data||null;}
+ }
+}
+function setMode(m){
+ mode=m;var reg=m==="reg";
+ $("regFields").hidden=!reg;
+ $("intro").innerHTML=reg?"Créez votre compte vendeur et profitez de <b>30 jours gratuits</b>. Les acheteurs n’ont pas besoin de compte.":"Connectez-vous à votre compte vendeur.";
+ $("go").textContent=reg?"Commencer mon mois gratuit":"Se connecter";
+ $("swap").textContent=reg?"J’ai déjà un compte":"Créer un compte vendeur";
+ $("pw").autocomplete=reg?"new-password":"current-password";$("aerr").textContent="";
+}
+function refresh(){
+ var u=S.user,p=S.profile,tr=trial();
+ $("auth").hidden=!!u;$("status").hidden=!u;
+ if(u){
+  $("sname").textContent=p?p.name:u.email;
+  $("sinfo").textContent=p?(p.country+", WhatsApp "+p.whatsapp):"Profil en cours de création…";
+  var b=$("sbadge");b.className="badge"+(tr.ok?"":" bad");
+  b.textContent=!p?"Profil introuvable":tr.paid?"Abonnement actif":tr.ok?("Essai gratuit : "+tr.left+(tr.left>1?" jours restants":" jour restant")):"Essai terminé";
+  $("shint").textContent=tr.ok?"À la fin de l’essai, un abonnement sera nécessaire pour publier et garder vos annonces visibles.":"Abonnez-vous pour publier de nouvelles annonces.";
+ }
+ $("sellLocked").hidden=tr.ok;$("sellForm").hidden=!tr.ok;
+ $("lockMsg").textContent=!u?"Créez d’abord votre compte vendeur (30 jours gratuits) pour publier une annonce.":!p?"Profil introuvable. Déconnectez-vous puis recréez votre compte.":"Votre essai gratuit est terminé. Abonnez-vous pour publier.";
+}
+function show(tab){
+ ["explore","sell","account"].forEach(function(s){$(s).hidden=(s!==tab);});
+ document.querySelectorAll("nav button").forEach(function(b){if(b.dataset.tab===tab)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
+ window.scrollTo(0,0);
+}
+document.querySelectorAll("nav button").forEach(function(b){b.addEventListener("click",function(){show(b.dataset.tab);});});
+$("goAcc").addEventListener("click",function(){show("account");});
+["q","fc","fk"].forEach(function(i){$(i).addEventListener("input",renderList);});
+$("swap").addEventListener("click",function(){setMode(mode==="reg"?"login":"reg");});
+$("go").addEventListener("click",async function(){
+ if(!sb){$("aerr").textContent="Connexion impossible. Vérifiez votre réseau.";return;}
+ var em=$("em").value.trim(),pw=$("pw").value,err=$("aerr");err.textContent="";
+ if(!em||pw.length<6){err.textContent="Indiquez votre email et un mot de passe de 6 caractères minimum.";return;}
+ $("go").disabled=true;
+ if(mode==="reg"){
+  var n=$("n").value.trim(),w=$("w").value.replace(/\D/g,"");
+  if(!n||w.length<8){err.textContent="Indiquez votre nom et un numéro WhatsApp avec l’indicatif du pays.";$("go").disabled=false;return;}
+  try{localStorage.setItem("money-pending",JSON.stringify({n:n,c:$("c").value,w:w}));}catch(e){}
+  var r=await sb.auth.signUp({email:em,password:pw});
+  if(r.error)err.textContent="Inscription impossible : "+r.error.message;
+  else if(!r.data.session)err.textContent="Un email de confirmation vous a été envoyé. Confirmez-le, puis connectez-vous.";
+ }else{
+  var r2=await sb.auth.signInWithPassword({email:em,password:pw});
+  if(r2.error)err.textContent="Connexion impossible : "+r2.error.message;
+ }
+ $("go").disabled=false;
+});
+$("out").addEventListener("click",async function(){await sb.auth.signOut();});
+$("pub").addEventListener("click",async function(){
+ var t=$("t").value.trim(),p=$("p").value,v=$("v").value.trim(),err=$("serr");
+ if(!t||!p||!v){err.textContent="Remplissez tous les champs.";return;}
+ err.textContent="";$("pub").disabled=true;
+ var r=await sb.from("listings").insert({title:t,price:Number(p),category:$("k").value,city:v,country:S.profile.country,whatsapp:S.profile.whatsapp});
+ $("pub").disabled=false;
+ if(r.error){err.textContent="Publication refusée : "+r.error.message;return;}
+ ["t","p","v"].forEach(function(i){$(i).value="";});
+ $("q").value="";$("fc").value="";$("fk").value="";await loadList();show("explore");
+});
+setMode("reg");show("explore");loadList();
+if(sb){sb.auth.onAuthStateChange(function(ev,sess){
+ S.user=sess?sess.user:null;
+ setTimeout(async function(){await loadProfile();refresh();renderList();},0);
+});}else{refresh();}
+</script>
+</body>
+</html>
